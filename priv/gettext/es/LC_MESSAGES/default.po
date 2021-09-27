@@ -1,0 +1,162 @@
+## "msgid"s in this file come from POT (.pot) files.
+##
+## Do not add, change, or remove "msgid"s manually here as
+## they're tied to the ones in the corresponding POT file
+## (with the same domain).
+##
+## Use "mix gettext.extract --merge" or "mix gettext.merge"
+## to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: es\n"
+"Plural-Forms: nplurals=2\n"
+
+#, elixir-format
+#: lib/amadeus/commands/play.ex:20
+msgid "A YouTube url or song title"
+msgstr "Una URL de Toutube un una canción para buscar"
+
+#, elixir-format
+#: lib/amadeus/commands/play.ex:53
+msgid "Added **%{title}** to the queue"
+msgstr "Agregada **%{title}** a la playlist"
+
+#, elixir-format
+#: lib/amadeus/commands/play.ex:85
+msgid "Added `%{count}` songs to the playlist!\n*Now playing **%{now_playing}***\n"
+msgstr "`%{count}` canciones agregadas a la playlist!\n*Reproduciendo **%{now_playing}***\n"
+
+#, elixir-format
+#: lib/amadeus/commands/play.ex:61 lib/amadeus/commands/play.ex:75
+msgid "Could not find song"
+msgstr "No pude encontrar esa canción"
+
+#, elixir-format
+#: lib/amadeus/commands/stop.ex:25
+msgid "Ittekimasu!"
+msgstr ""
+
+#, elixir-format
+#: lib/amadeus/commands/move.ex:54
+msgid "Moved song at position `%{from}` to position `%{to}`"
+msgstr "Canción movida de la posición `%{from}` a la posición %{to}"
+
+#, elixir-format
+#: lib/amadeus/commands/move.ex:15
+msgid "Moves a song to a new position in the playlist"
+msgstr "Mueve la canción a una nueva posición en la playlist"
+
+#, elixir-format
+#: lib/amadeus/commands/play.ex:54
+msgid "Now playing **%{title}**"
+msgstr "Reproduciendo **%{title}**"
+
+#, elixir-format
+#: lib/amadeus/commands/play.ex:15
+msgid "Play a song"
+msgstr "Reproducir una canción"
+
+#, elixir-format
+#: lib/amadeus/commands/shuffle.ex:27
+msgid "Shuffled %{count} songs!"
+msgstr "`%{count}` canciones mezcladas!"
+
+#, elixir-format
+#: lib/amadeus/commands/shuffle.ex:14
+msgid "Shuffles the queue songs"
+msgstr "Mezcla las canciones de la playlist"
+
+#, elixir-format
+#: lib/amadeus/commands/skip.ex:24
+msgid "Skipped **%{title}**"
+msgstr "Salteando **%{title}**"
+
+#, elixir-format
+#: lib/amadeus/commands/skip.ex:14
+msgid "Skips the current playing song"
+msgstr "Saltea la canción que se esté reproduciendo"
+
+#, elixir-format
+#: lib/amadeus/commands/stop.ex:14
+msgid "Stops playing and clears queue"
+msgstr "Deja de reproducir y limpia la playlist"
+
+#, elixir-format
+#: lib/amadeus/commands/move.ex:40
+msgid "The `from` position must be a positive integer"
+msgstr "La posición `desde` tiene que ser un número positivo"
+
+#, elixir-format
+#: lib/amadeus/commands/move.ex:41
+msgid "The `to` position must be a positive integer"
+msgstr "La posición `hacia` debe ser un número positivo"
+
+#, elixir-format
+#: lib/amadeus/commands/move.ex:26
+msgid "The new position for the song"
+msgstr "La nueva posición para la canción"
+
+#, elixir-format
+#: lib/amadeus/commands/move.ex:20
+msgid "The position of the song to move"
+msgstr "La posición de la canción a mover"
+
+#, elixir-format
+#: lib/amadeus/commands/shuffle.ex:25
+msgid "There are no songs to shuffle."
+msgstr "No hay canciones para mezclar."
+
+#, elixir-format
+#: lib/amadeus/commands/skip.ex:26 lib/amadeus/commands/stop.ex:30
+msgid "There's no song playing!"
+msgstr "No hay ninguna canción reproduciéndose!"
+
+#, elixir-format
+#: lib/amadeus/commands/move.ex:19
+msgid "from"
+msgstr "desde"
+
+#, elixir-format
+#: lib/amadeus/commands/play.ex:19 lib/amadeus/commands/play.ex:29
+msgid "title_or_url"
+msgstr "titulo_o_url"
+
+#, elixir-format
+#: lib/amadeus/commands/move.ex:25
+msgid "to"
+msgstr "hacia"
+
+#, elixir-format
+#: lib/amadeus/paginator.ex:123
+msgid "Next"
+msgstr "Siguiente"
+
+#, elixir-format, fuzzy
+#: lib/amadeus/commands/queue.ex:26
+msgid "Now playing *%{title}*"
+msgstr "Reproduciendo **%{title}**"
+
+#, elixir-format
+#: lib/amadeus/paginator.ex:117
+msgid "Page %{current} of %{total}"
+msgstr "Página %{current} de %{total}"
+
+#, elixir-format
+#: lib/amadeus/paginator.ex:109
+msgid "Previous"
+msgstr "Anterior"
+
+#, elixir-format, fuzzy
+#: lib/amadeus/commands/queue.ex:16
+msgid "Shows the current playlist"
+msgstr "Muestra la playlist"
+
+#, elixir-format
+#: lib/amadeus/commands/queue.ex:51
+msgid "The playlist is currently empty."
+msgstr "La lista está vacía."
+
+#, elixir-format
+#: lib/amadeus/commands/queue.ex:40
+msgid "`%{count}` songs"
+msgstr "`%{count}` canciones"

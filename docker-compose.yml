@@ -1,0 +1,11 @@
+version: "3.5"
+
+services:
+  app:
+    image: amadeus:0.1.1
+    env_file:
+      - .env
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
