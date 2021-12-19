@@ -4,7 +4,7 @@ defmodule Amadeus.MixProject do
   def project do
     [
       app: :amadeus,
-      version: "0.1.1",
+      version: "0.1.2",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
