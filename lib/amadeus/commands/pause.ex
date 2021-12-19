@@ -1,23 +1,27 @@
 defmodule Amadeus.Commands.Pause do
   @moduledoc false
-  @behaviour Nosedrum.Command
+  @behaviour Amadeus.Command
+
+  import Amadeus.Gettext
 
   alias Amadeus.DJ
+  alias Nostrum.Api
 
-  @impl true
-  def usage, do: ["queue"]
+  @impl Amadeus.Command
+  def spec(name) do
+    %{
+      name: name,
+      description: gettext("Pauses the current song.")
+    }
+  end
 
-  @impl true
-  def description, do: "shows the current queue"
+  @impl Amadeus.Command
+  def handle_interaction(interaction) do
+    DJ.pause(interaction.guild_id)
 
-  @impl true
-  def parse_args(args), do: Enum.join(args, " ")
-
-  @impl true
-  def predicates, do: []
-
-  @impl true
-  def command(msg, _) do
-    DJ.pause(msg.guild_id)
+    Api.create_interaction_response(interaction, %{
+      type: 4,
+      data: %{content: gettext("Song paused. Use `/play` again to resume!")}
+    })
   end
 end
