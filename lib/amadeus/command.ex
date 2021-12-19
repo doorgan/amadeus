@@ -12,5 +12,5 @@ defmodule Amadeus.Command do
   @spec get_option(Interaction.t(), String.t()) ::
           Nostrum.Struct.ApplicationCommandInteractionData.options()
   def get_option(interaction, name),
-    do: Enum.find(interaction.data.options, fn %{name: n} -> n == name end)
+    do: Enum.find(interaction.data.options || [], fn %{name: n} -> n == name end)
 end
