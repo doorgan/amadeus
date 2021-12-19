@@ -1,6 +1,6 @@
 # Amadeus
 
-Music bot in Elixir.
+Waifu music bot in Elixir.
 
 ## Getting started
 
