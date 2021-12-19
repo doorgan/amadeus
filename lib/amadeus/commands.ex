@@ -6,7 +6,8 @@ defmodule Amadeus.Commands do
     "stop" => Amadeus.Commands.Stop,
     "queue" => Amadeus.Commands.Queue,
     "shuffle" => Amadeus.Commands.Shuffle,
-    "move" => Amadeus.Commands.Move
+    "move" => Amadeus.Commands.Move,
+    "repeat" => Amadeus.Commands.Repeat
   }
 
   @command_names for {name, _} <- @commands, do: name

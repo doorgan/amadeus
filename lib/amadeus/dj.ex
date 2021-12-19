@@ -4,6 +4,7 @@ defmodule Amadeus.DJ do
   """
 
   use GenServer
+  use TypedStruct
 
   alias Amadeus.DJ.Song
   alias Amadeus.Utils
@@ -12,17 +13,28 @@ defmodule Amadeus.DJ do
   alias Nostrum.Struct.Message
   alias Nostrum.Struct.Interaction
 
+  @type status :: :playing | :paused | :stopped
+
+  typedstruct do
+    field :guild_id, Snowflake.t(), enforce: true
+    field :status, status, enforce: true
+    field :queue, Qex.t(), enforce: true
+    field :current_song, Song.t()
+    field :repeat?, boolean(), enforce: true, default: false
+  end
+
   def start_link(guild_id) do
     GenServer.start_link(__MODULE__, guild_id, name: via_tuple(guild_id))
   end
 
   @impl GenServer
   def init(guild_id) do
-    state = %{
+    state = %__MODULE__{
       guild_id: guild_id,
       status: :stopped,
       queue: Qex.new(),
-      current_song: nil
+      current_song: nil,
+      repeat?: false
     }
 
     :pg.join({:guild, guild_id}, self())
@@ -61,7 +73,7 @@ defmodule Amadeus.DJ do
 
   @spec play(Interaction.t(), Song.t()) :: :playing | :enqueued
   def play(%{guild_id: guild_id} = interaction, song),
-    do: GenServer.call(get_dj(guild_id), {:play, interaction, song})
+    do: GenServer.call(get_dj(guild_id), {:play, interaction, song}, :timer.seconds(15))
 
   @doc """
   Stops playing the current song, but allows to resume it by caliing `play`.
@@ -99,6 +111,11 @@ defmodule Amadeus.DJ do
   @spec move(Snowflake.t(), non_neg_integer(), non_neg_integer()) :: :ok
   def move(guild_id, from, to) do
     GenServer.call(get_dj(guild_id), {:move, from, to})
+  end
+
+  @spec toggle_repeat(Snowflake.t()) :: boolean()
+  def toggle_repeat(guild_id) do
+    GenServer.call(get_dj(guild_id), :toggle_repeat)
   end
 
   # CALLBACKS
@@ -187,6 +204,11 @@ defmodule Amadeus.DJ do
     {:reply, :ok, %{state | queue: queue}}
   end
 
+  def handle_call(:toggle_repeat, _from, state) do
+    repeat? = not state.repeat?
+    {:reply, repeat?, %{state | repeat?: repeat?}}
+  end
+
   @impl GenServer
   def handle_info({:VOICE_SPEAKING_UPDATE, _}, state) do
     if not Voice.playing?(state.guild_id) and state.status == :playing do
@@ -206,15 +228,31 @@ defmodule Amadeus.DJ do
     %{state | queue: Qex.push(state.queue, song)}
   end
 
+  @spec do_skip(t) :: t
   defp do_skip(state) do
     case Qex.pop(state.queue) do
       {{:value, song}, queue} ->
         state = %{state | queue: queue}
+
+        state =
+          if state.repeat? do
+            do_enqueue(state, state.current_song)
+          else
+            state
+          end
+
         do_play(state, song)
 
       {:empty, _} ->
-        Voice.leave_channel(state.guild_id)
-        state
+        if state.repeat? do
+          state
+          |> do_play(state.current_song)
+
+          state
+        else
+          Voice.leave_channel(state.guild_id)
+          state
+        end
     end
   end
 

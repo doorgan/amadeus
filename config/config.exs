@@ -2,4 +2,4 @@ import Config
 
 config :amadeus, Amadeus.Gettext,
   locales: ["en", "es"],
-  default_locale: "en"
+  default_locale: "es"
