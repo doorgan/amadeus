@@ -126,22 +126,22 @@ msgid "to"
 msgstr ""
 
 #, elixir-format
-#: lib/amadeus/paginator.ex:123
+#: lib/amadeus/paginator.ex:134
 msgid "Next"
 msgstr ""
 
 #, elixir-format
-#: lib/amadeus/commands/queue.ex:26
+#: lib/amadeus/commands/queue.ex:27
 msgid "Now playing *%{title}*"
 msgstr ""
 
 #, elixir-format
-#: lib/amadeus/paginator.ex:117
+#: lib/amadeus/paginator.ex:128
 msgid "Page %{current} of %{total}"
 msgstr ""
 
 #, elixir-format
-#: lib/amadeus/paginator.ex:109
+#: lib/amadeus/paginator.ex:120
 msgid "Previous"
 msgstr ""
 
@@ -151,11 +151,26 @@ msgid "Shows the current playlist"
 msgstr ""
 
 #, elixir-format
-#: lib/amadeus/commands/queue.ex:51
+#: lib/amadeus/commands/queue.ex:52
 msgid "The playlist is currently empty."
 msgstr ""
 
 #, elixir-format
-#: lib/amadeus/commands/queue.ex:40
+#: lib/amadeus/commands/queue.ex:41
 msgid "`%{count}` songs"
+msgstr ""
+
+#, elixir-format
+#: lib/amadeus/commands/repeat.ex:26
+msgid "Repeat set to: **OFF**"
+msgstr ""
+
+#, elixir-format
+#: lib/amadeus/commands/repeat.ex:24
+msgid "Repeat set to: **ON**"
+msgstr ""
+
+#, elixir-format
+#: lib/amadeus/commands/repeat.ex:14
+msgid "Toggles the playlist repeat cycle."
 msgstr ""

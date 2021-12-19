@@ -245,13 +245,9 @@ defmodule Amadeus.DJ do
 
       {:empty, _} ->
         if state.repeat? do
-          state
-          |> do_play(state.current_song)
-
-          state
+          do_play(state, state.current_song)
         else
-          Voice.leave_channel(state.guild_id)
-          state
+          do_stop(state)
         end
     end
   end
