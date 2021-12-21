@@ -18,7 +18,7 @@ defmodule Amadeus.Commands.Play do
           type: 3,
           name: gettext("title_or_url"),
           description: gettext("A YouTube url or song title"),
-          required: true
+          required: false
         }
       ]
     }
@@ -26,8 +26,22 @@ defmodule Amadeus.Commands.Play do
 
   @impl Amadeus.Command
   def handle_interaction(interaction) do
-    song_url = Command.get_option(interaction, gettext("title_or_url")).value
+    case Command.get_option(interaction, gettext("title_or_url")) do
+      nil -> handle_resume(interaction)
+      song -> handle_play(interaction, song.value)
+    end
+  end
 
+  defp handle_resume(interaction) do
+    DJ.play(interaction)
+
+    Api.create_interaction_response(interaction, %{
+      type: 4,
+      data: %{content: gettext("Resuming song")}
+    })
+  end
+
+  defp handle_play(interaction, song_url) do
     case Youtube.parse_url(song_url) do
       :error ->
         song = Youtube.search(song_url) |> List.first()

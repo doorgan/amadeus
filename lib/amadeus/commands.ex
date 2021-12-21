@@ -1,7 +1,7 @@
 defmodule Amadeus.Commands do
   @commands %{
     "play" => Amadeus.Commands.Play,
-    # "pause" => Amadeus.Commands.Pause,
+    "pause" => Amadeus.Commands.Pause,
     "skip" => Amadeus.Commands.Skip,
     "stop" => Amadeus.Commands.Stop,
     "queue" => Amadeus.Commands.Queue,

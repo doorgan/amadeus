@@ -15,3 +15,7 @@ config :amadeus,
   admin_id: System.fetch_env!("ADMIN_ID"),
   command_registration: System.get_env("TEST_GUILD"),
   youtube_api_key: System.fetch_env!("YOUTUBE_API_KEY")
+
+config :logger, :console,
+  format: "[$level] $message $metadata\n",
+  metadata: [:error_reason, :dj_state, :dj_song]

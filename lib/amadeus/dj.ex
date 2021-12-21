@@ -13,6 +13,8 @@ defmodule Amadeus.DJ do
   alias Nostrum.Struct.Message
   alias Nostrum.Struct.Interaction
 
+  require Logger
+
   @type status :: :playing | :paused | :stopped
 
   typedstruct do
@@ -253,7 +255,10 @@ defmodule Amadeus.DJ do
   end
 
   defp do_play(state, song) do
-    play_song(state.guild_id, song)
+    with {:error, reason} <- play_song(state.guild_id, song) do
+      Logger.error("Failed to play song.", error_reason: reason, dj_state: state, dj_song: song)
+    end
+
     %{state | current_song: song, status: :playing}
   end
 

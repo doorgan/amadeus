@@ -31,7 +31,8 @@ defmodule Amadeus.MixProject do
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:gun, "~> 2.0.0-rc.2", override: true},
-      {:nostrum, github: "Kraigie/nostrum", override: true},
+      {:nostrum,
+       github: "Kraigie/nostrum", ref: "d37769a3263996c48bb6f71ee582d2bc477d99a6", override: true},
       {:nosedrum, "~> 0.3"},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:typed_struct, "~> 0.2.1"},
