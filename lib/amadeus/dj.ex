@@ -4,26 +4,13 @@ defmodule Amadeus.DJ do
   """
 
   use GenServer
-  use TypedStruct
 
-  alias Amadeus.DJ.Song
-  alias Amadeus.Utils
-  alias Nostrum.Voice
+  alias Amadeus.DJ.State
   alias Nostrum.Snowflake
-  alias Nostrum.Struct.Message
   alias Nostrum.Struct.Interaction
+  alias Nostrum.Voice
 
   require Logger
-
-  @type status :: :playing | :paused | :stopped
-
-  typedstruct do
-    field :guild_id, Snowflake.t(), enforce: true
-    field :status, status, enforce: true
-    field :queue, Qex.t(), enforce: true
-    field :current_song, Song.t()
-    field :repeat?, boolean(), enforce: true, default: false
-  end
 
   def start_link(guild_id) do
     GenServer.start_link(__MODULE__, guild_id, name: via_tuple(guild_id))
@@ -31,7 +18,7 @@ defmodule Amadeus.DJ do
 
   @impl GenServer
   def init(guild_id) do
-    state = %__MODULE__{
+    state = %State{
       guild_id: guild_id,
       status: :stopped,
       queue: Qex.new(),
@@ -47,12 +34,11 @@ defmodule Amadeus.DJ do
   @doc """
   Enqueues a song to be played next.
   """
-  @spec enqueue(Interaction.t(), [Song.t()]) :: :ok
+  @spec enqueue(Interaction.t(), [Song.t()] | Song.t()) :: :ok
   def enqueue(interaction, songs) when is_list(songs) do
     GenServer.call(get_dj(interaction.guild_id), {:enqueue, songs})
   end
 
-  @spec enqueue(Interaction.t(), Song.t()) :: :ok
   def enqueue(interaction, song) do
     enqueue(interaction, [song])
   end
@@ -124,13 +110,7 @@ defmodule Amadeus.DJ do
 
   @impl GenServer
   def handle_call({:enqueue, songs}, _from, state) do
-    queue =
-      state.queue
-      |> Enum.to_list()
-      |> Utils.List.merge(songs)
-      |> Qex.new()
-
-    {:reply, :ok, %{state | queue: queue}}
+    {:reply, :ok, State.enqueue(state, songs)}
   end
 
   def handle_call(:queue, _from, state) do
@@ -138,72 +118,35 @@ defmodule Amadeus.DJ do
   end
 
   def handle_call({:play, interaction, song}, _from, state) do
-    join_voice_channel(interaction)
-
-    case state.status do
-      status when status in [:playing, :paused] ->
-        state = do_enqueue(state, song)
-        {:reply, :enqueued, state}
-
-      :stopped ->
-        state = do_play(state, song)
-        {:reply, :playing, state}
-    end
+    {status, state} = State.play(state, interaction, song)
+    {:reply, status, state}
   end
 
   def handle_call({:play, interaction}, _from, state) do
-    join_voice_channel(interaction)
-
-    case state.status do
-      :paused ->
-        state = do_resume(state)
-        {:reply, :playing, state}
-
-      _ ->
-        {:reply, :playing, state}
-    end
+    {status, state} = State.play(state, interaction)
+    {:reply, status, state}
   end
 
   def handle_call(:stop, _from, state) do
-    case state.status do
-      status when status in [:playing, :paused] ->
-        state = do_stop(state)
-        state = put_in(state.queue, Qex.new())
-        {:reply, :ok, state}
-
-      :stopped ->
-        {:reply, :ok, state}
-    end
+    {:reply, :ok, State.stop(state)}
   end
 
   def handle_call(:pause, _from, state) do
-    case state.status do
-      :playing ->
-        {:reply, :ok, do_pause(state)}
-
-      _ ->
-        {:reply, :ok, state}
-    end
+    {:reply, :ok, State.pause(state)}
   end
 
   def handle_call(:skip, _from, state) do
-    {:reply, state.current_song, do_skip(state)}
+    {:reply, state.current_song, State.skip(state)}
   end
 
   def handle_call(:shuffle, _from, state) do
-    queue = Enum.shuffle(state.queue) |> Qex.new()
+    state = State.shuffle(state)
 
-    {:reply, queue, %{state | queue: queue}}
+    {:reply, state.queue, state}
   end
 
   def handle_call({:move, from, to}, _from, state) do
-    queue =
-      state.queue
-      |> Enum.to_list()
-      |> Enum.slide(from, to)
-      |> Qex.new()
-
-    {:reply, :ok, %{state | queue: queue}}
+    {:reply, :ok, State.move(state, from, to)}
   end
 
   def handle_call(:toggle_repeat, _from, state) do
@@ -214,7 +157,7 @@ defmodule Amadeus.DJ do
   @impl GenServer
   def handle_info({:VOICE_SPEAKING_UPDATE, _}, state) do
     if not Voice.playing?(state.guild_id) and state.status == :playing do
-      {:noreply, do_skip(state)}
+      {:noreply, State.skip(state)}
     else
       {:noreply, state}
     end
@@ -226,97 +169,9 @@ defmodule Amadeus.DJ do
 
   def handle_info(_, state), do: {:noreply, state}
 
-  defp do_enqueue(state, song) do
-    %{state | queue: Qex.push(state.queue, song)}
-  end
-
-  @spec do_skip(t) :: t
-  defp do_skip(state) do
-    case Qex.pop(state.queue) do
-      {{:value, song}, queue} ->
-        state = %{state | queue: queue}
-
-        state =
-          if state.repeat? do
-            do_enqueue(state, state.current_song)
-          else
-            state
-          end
-
-        do_play(state, song)
-
-      {:empty, _} ->
-        if state.repeat? do
-          do_play(state, state.current_song)
-        else
-          do_stop(state)
-        end
-    end
-  end
-
-  defp do_play(state, song) do
-    with {:error, reason} <- play_song(state.guild_id, song) do
-      Logger.error("Failed to play song.", error_reason: reason, dj_state: state, dj_song: song)
-    end
-
-    %{state | current_song: song, status: :playing}
-  end
-
-  defp do_stop(state) do
-    Voice.leave_channel(state.guild_id)
-    %{state | status: :stopped, current_song: nil}
-  end
-
-  defp do_pause(state) do
-    Voice.pause(state.guild_id)
-    %{state | status: :paused}
-  end
-
-  defp do_resume(state) do
-    Voice.resume(state.guild_id)
-    %{state | status: :playing}
-  end
-
-  @spec join_voice_channel(Message.t()) :: :error | :ok
-  def join_voice_channel(interaction) do
-    case get_voice_channel(interaction.guild_id, interaction.member.user.id) do
-      nil ->
-        :error
-
-      voice_channel_id ->
-        Voice.join_channel(interaction.guild_id, voice_channel_id)
-        :ok
-    end
-  end
-
-  @spec play_song(Snowflake.t(), Song.t()) :: :ok | {:error, String.t()}
-  def play_song(guild_id, song) do
-    wait_until_voice_ready(guild_id)
-    Voice.stop(guild_id)
-    Voice.play(guild_id, song.url, :ytdl)
-  end
-
-  def wait_until_voice_ready(guild_id) do
-    if Voice.ready?(guild_id) do
-      :ok
-    else
-      Process.sleep(10)
-      wait_until_voice_ready(guild_id)
-    end
-  end
-
-  @spec get_voice_channel(Snowflake.t(), Snowflake.t()) :: Snowflake.t() | nil
-  def get_voice_channel(guild_id, user_id) do
-    guild_id
-    |> Nostrum.Cache.GuildCache.get!()
-    |> Map.get(:voice_states)
-    |> Enum.find(%{}, fn v -> v.user_id == user_id end)
-    |> Map.get(:channel_id)
-  end
-
   defp via_tuple(name), do: {:via, Registry, {Amadeus.DJ.Registry, name}}
 
-  defp get_dj(guild_id) do
+  def get_dj(guild_id) do
     case Amadeus.DJ.Supervisor.start_child(guild_id) do
       {:ok, pid} -> pid
       {:error, {:already_started, pid}} -> pid
